@@ -6,8 +6,8 @@ on:
   
   # 2. Lập lịch chạy
   schedule:
-    # Chạy vào 8:30 UTC ngày 30 tháng 10
-    # (Tức 15:30 ngày 30/10 giờ Việt Nam)
+    # Chạy vào 8:40 UTC ngày 30 tháng 10
+    # (Tức 15:40 ngày 30/10 giờ Việt Nam)
     - cron: '40 8 30 10 *'
 
 jobs:
@@ -45,4 +45,14 @@ jobs:
             --category-name "Software Testing" \
             --category-url "https://www.udemy.com/courses/development/software-testing/" \
             --start-page 1 \
-            --end-page 10
+            --end-page 5
+      
+      # === ĐÃ SỬA BƯỚC NÀY ===
+      - name: Upload Debug Artifacts
+        # Luôn chạy bước này, dù thành công hay thất bại
+        if: always() 
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-files
+          # Trỏ đường dẫn vào thư mục 'artifacts' mới
+          path: artifacts/
