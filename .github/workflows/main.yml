@@ -1,13 +1,8 @@
 name: 'Manual Scraper Test'
 
 on:
-  # 1. Cho phép bạn chạy thủ công bất cứ lúc nào
   workflow_dispatch:
-  
-  # 2. Lập lịch chạy
   schedule:
-    # Chạy vào 8:40 UTC ngày 30 tháng 10
-    # (Tức 15:40 ngày 30/10 giờ Việt Nam)
     - cron: '40 8 30 10 *'
 
 jobs:
@@ -33,26 +28,36 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # === THÊM BƯỚC NÀY VÀO ===
+      - name: Get Chrome Version
+        id: chrome_version # Đặt ID cho bước này
+        run: |
+          # Lấy chuỗi phiên bản (vd: "Google Chrome 140.0.7339.0")
+          VERSION_STRING=$(google-chrome --version)
+          # Trích xuất số phiên bản chính (vd: "140")
+          VERSION_MAIN=$(echo $VERSION_STRING | cut -d " " -f 3 | cut -d "." -f 1)
+          # Lưu nó vào biến môi trường của GHA
+          echo "CHROME_VERSION=$VERSION_MAIN" >> $GITHUB_ENV
+          echo "Detected Chrome version: $VERSION_MAIN"
+      # === KẾT THÚC THÊM BƯỚC ===
+
       - name: Run Udemy Scraper TEST
         env:
           HEADLESS: "true"
-          # Lấy "mật khẩu" Azure từ GitHub Secrets
           AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          # Truyền phiên bản đã phát hiện vào script Python
+          INSTALLED_CHROME_VERSION: ${{ env.CHROME_VERSION }}
         run: |
-          # Đây là nơi chúng ta "ra lệnh" cho script .py
           python udemy_scraper.py \
             --job-type "test_run" \
             --category-name "Software Testing" \
             --category-url "https://www.udemy.com/courses/development/software-testing/" \
             --start-page 1 \
-            --end-page 5
+            --end-page 5 # Sửa lại 5 trang như trong log của bạn
       
-      # === ĐÃ SỬA BƯỚC NÀY ===
       - name: Upload Debug Artifacts
-        # Luôn chạy bước này, dù thành công hay thất bại
         if: always() 
         uses: actions/upload-artifact@v4
         with:
           name: debug-files
-          # Trỏ đường dẫn vào thư mục 'artifacts' mới
           path: artifacts/
