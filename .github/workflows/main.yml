@@ -1,0 +1,48 @@
+name: 'Manual Scraper Test'
+
+on:
+  # 1. Cho phép bạn chạy thủ công bất cứ lúc nào
+  workflow_dispatch:
+  
+  # 2. Lập lịch chạy
+  schedule:
+    # Chạy vào 8:30 UTC ngày 30 tháng 10
+    # (Tức 15:30 ngày 30/10 giờ Việt Nam)
+    - cron: '30 8 30 10 *'
+
+jobs:
+  run-test-scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Google Chrome
+        run: |
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo dpkg -i google-chrome-stable_current_amd64.deb
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Udemy Scraper TEST
+        env:
+          HEADLESS: "true"
+          # Lấy "mật khẩu" Azure từ GitHub Secrets
+          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+        run: |
+          # Đây là nơi chúng ta "ra lệnh" cho script .py
+          python udemy_scraper.py \
+            --job-type "test_run" \
+            --category-name "Software Testing" \
+            --category-url "https://www.udemy.com/courses/development/software-testing/" \
+            --start-page 1 \
+            --end-page 10
