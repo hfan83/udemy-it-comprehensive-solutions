@@ -190,8 +190,25 @@ def get_course_urls_per_page(listing_url: str, headless: bool = False) -> List[s
             )
             print("[wait] ...Đã thấy link. Lấy source.")
         except TimeoutException:
+            # === THÊM DEBUG VÀO ĐÂY ===
+            print("[debug] ❌ LỖI: Không tìm thấy link. Đang chụp ảnh màn hình...")
+            try:
+                # Tạo thư mục 'artifacts' nếu chưa có
+                os.makedirs("artifacts", exist_ok=True)
+                debug_time = datetime.datetime.now().strftime("%H%M%S")
+                screenshot_file = f"artifacts/debug_screenshot_{debug_time}.png"
+                html_file = f"artifacts/debug_page_{debug_time}.html"
+
+                driver.save_screenshot(screenshot_file)
+                with open(html_file, "w", encoding='utf-8') as f:
+                    f.write(driver.page_source)
+                print(f"[debug] Đã lưu {screenshot_file} và {html_file}")
+            except Exception as e:
+                print(f"[debug] Lỗi khi lưu file debug: {e}")
+            # === KẾT THÚC DEBUG ===
+            
             print("[wait] ❌ WARN: Hết thời gian chờ, không thấy link course nào.")
-            pass
+            pass # Vẫn tiếp tục
 
         html = driver.page_source
         links = _extract_course_links_from_html(html)
@@ -441,5 +458,6 @@ if __name__ == "__main__":
             
     else:
         print("\n[save] Không có dữ liệu để lưu file.")
+
 
     print("\n=== HOÀN THÀNH JOB ===")
