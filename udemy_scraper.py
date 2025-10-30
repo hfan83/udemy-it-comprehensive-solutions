@@ -50,15 +50,18 @@ def _init_driver(headless=False):
     print(f"[driver] Sử dụng profile tại: {profile_path}")
     opts.add_argument(f"--user-data-dir={profile_path}")
 
-    # CHROME_PATH = r"C:\Program Files\Google\Chrome Beta\Application\chrome.exe" # Dùng cho máy bạn
-    # version_main = 142 # Dùng cho máy bạn
-    
-    # Khi chạy trên GHA, chúng ta dùng Chrome stable (đã cài ở file .yml)
-    # và để `uc` tự tìm
+    # === SỬA LỖI PHIÊN BẢN CHROME ===
+    # Đọc phiên bản Chrome đã được GHA phát hiện
+    detected_version_str = os.environ.get("INSTALLED_CHROME_VERSION")
+    version_main = None
+    if detected_version_str and detected_version_str.isdigit():
+        version_main = int(detected_version_str)
+        print(f"[driver] Đã phát hiện GHA Chrome v{version_main}. Sẽ ép 'uc' dùng phiên bản này.")
+    # === KẾT THÚC SỬA LỖI ===
+
     driver = uc.Chrome(
         options=opts,
-        # browser_executable_path=CHROME_PATH, # <-- TẮT KHI CHẠY GHA
-        # version_main=version_main            # <-- TẮT KHI CHẠY GHA
+        version_main=version_main # <-- DÒNG QUAN TRỌNG NHẤT
     )
 
     driver.set_page_load_timeout(PAGELOAD_TIMEOUT)
@@ -461,3 +464,4 @@ if __name__ == "__main__":
 
 
     print("\n=== HOÀN THÀNH JOB ===")
+
