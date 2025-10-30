@@ -1,0 +1,7 @@
+undetected-chromedriver
+beautifulsoup4
+selenium
+lxml
+pandas
+pyarrow
+azure-storage-blob
